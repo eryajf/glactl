@@ -21,6 +21,6 @@ main:
               --name mybuilder \
               --driver remote docker-container://buildkitd
             docker buildx build \
-              -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE} \
               -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${CNB_BRANCH}_`date "+%Y%m%d%H%M%S"` \
+              -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE} \
               --platform=linux/arm64,linux/amd64 . --push
