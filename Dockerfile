@@ -1,20 +1,13 @@
-FROM registry.cn-hangzhou.aliyuncs.com/eryajf/golang:1.22.2-alpine3.19 AS builder
+FROM docker.cnb.cool/znb/images/alpine
 
-WORKDIR /app
-ENV GOPROXY      https://goproxy.io
+LABEL maintainer=eryajf
 
-RUN sed -i "s/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g" /etc/apk/repositories \
-    && apk upgrade && apk add --no-cache --virtual .build-deps \
-    ca-certificates gcc g++ curl upx
+ENV TZ=Asia/Shanghai
+ENV BINARY_NAME=glactl
 
-ADD . .
+ARG TARGETOS
+ARG TARGETARCH
 
-RUN go build -o glactl . && upx -9  glactl
+COPY bin/${BINARY_NAME}_${TARGETOS}_${TARGETARCH} /usr/local/bin/${BINARY_NAME}
 
-FROM registry.cn-hangzhou.aliyuncs.com/eryajf/alpine:3.19
-
-WORKDIR /app
-
-COPY --from=builder /app/glactl .
-
-RUN chmod +x glactl
+RUN chmod +x /usr/local/bin/${BINARY_NAME}

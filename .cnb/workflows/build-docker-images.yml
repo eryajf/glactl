@@ -1,0 +1,21 @@
+main:
+  push:
+    - runner:
+        cpus: 8
+      services:
+        - docker
+        - git-clone-yyds
+      stages:
+        - name: 📦 推送镜像
+          image: docker.cnb.cool/znb/images/debian:all
+          script: |
+            make gox-linux
+            docker run -d --name buildkitd \                                                                                                                                                                                                                            [364c47e] 
+              --security-opt seccomp=unconfined \
+              --security-opt apparmor=unconfined \
+              --security-opt systempaths=unconfined \
+              moby/buildkit:rootless
+            docker buildx create --use \
+              --name mybuilder \
+              --driver remote docker-container://buildkitd
+            docker buildx build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE} --platform=linux/arm64,linux/amd64 . --push
