@@ -6,12 +6,13 @@ main:
         - docker
         - git-clone-yyds
       stages:
-        - name: 📦 推送镜像
+        - name: 📦 构建制品
           image: docker.cnb.cool/znb/images/debian:all
           script: |
-            cat /root/.docker/config.json
             make gox-linux
-            docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
+        - name: 📦 推送镜像
+          script: |
+            cat /root/.docker/config.json
             docker run -d --name buildkitd \
               --security-opt seccomp=unconfined \
               --security-opt apparmor=unconfined \
