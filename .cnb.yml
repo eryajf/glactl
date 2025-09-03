@@ -1,3 +1,4 @@
 include:
 - .cnb/workflows/vscode.yml
 - .cnb/workflows/sync-to-github.yml
+- .cnb/workflows/build-docker-images.yml
