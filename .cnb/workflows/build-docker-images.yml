@@ -10,9 +10,8 @@ main:
           image: docker.cnb.cool/znb/images/debian:all
           script: |
             make gox-linux
-        - name: 📦 推送镜像
+        - name: 🐋 推送镜像
           script: |
-            cat /root/.docker/config.json
             docker run -d --name buildkitd \
               --security-opt seccomp=unconfined \
               --security-opt apparmor=unconfined \
@@ -21,4 +20,7 @@ main:
             docker buildx create --use \
               --name mybuilder \
               --driver remote docker-container://buildkitd
-            docker buildx build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE} --platform=linux/arm64,linux/amd64 . --push
+            docker buildx build \
+              -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE} \
+              -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${CNB_BRANCH}_`date "+%Y%m%d%H%M%S"` \
+              --platform=linux/arm64,linux/amd64 . --push
