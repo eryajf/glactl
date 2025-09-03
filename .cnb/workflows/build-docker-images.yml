@@ -9,6 +9,7 @@ main:
         - name: 📦 推送镜像
           image: docker.cnb.cool/znb/images/debian:all
           script: |
+            cat /root/.docker/config.json
             make gox-linux
             docker login -u ${CNB_TOKEN_USER_NAME} -p "${CNB_TOKEN}" ${CNB_DOCKER_REGISTRY}
             docker run -d --name buildkitd \
