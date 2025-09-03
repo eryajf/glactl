@@ -21,6 +21,13 @@ on:
       tags:
         description: 'Test scenario tags'
 
+env:
+  DOCKERHUB_USERNAME: eryajf
+  ALIHUB_URL: registry.cn-hangzhou.aliyuncs.com
+  ALIHUB_USERNAME: eryajf
+  ALIHUB_IMAGE_REPONAME: eryajf
+  IMAGE_REPONAME: glactl
+
 jobs:
   buildx:
     runs-on: ubuntu-latest
@@ -51,34 +58,31 @@ jobs:
           username: eryajf
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: 设置go环境
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache-dependency-path: "go.sum"
+      - name: 安装 UPX
+        uses: crazy-max/ghaction-upx@v3
+        with:
+          install-only: true
+      - run: go install github.com/authelia/gox@latest # setup gox
+      - run: make gox-linux
+
       - name: Build and push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          # 所需要的体系结构，可以在 Available platforms 步骤中获取所有的可用架构
-          platforms: linux/arm64,linux/amd64
-          # 镜像推送时间
           push: ${{ github.event_name != 'pull_request' }}
-          # 给清单打上多个标签
-          tags: |
-            eryajf/glactl:latest
-            eryajf/glactl:${{ steps.date.outputs.today }}
-
-      # 镜像推送到 阿里云仓库
-      - name: Login to the Ali Registry
-        uses: docker/login-action@v2
-        with:
-          registry: registry.cn-hangzhou.aliyuncs.com
-          username: eryajf
-          password: ${{ secrets.ALIHUB_TOKEN }}
-
-      - name: Build and push to Ali
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
+          cache-from: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPONAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPONAME }}:buildcache,mode=max
           platforms: linux/amd64,linux/arm64
           tags: |
-            registry.cn-hangzhou.aliyuncs.com/eryajf/glactl:${{ env.GITHUB_REF_NAME }}
-            registry.cn-hangzhou.aliyuncs.com/eryajf/glactl:latest
+            ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPONAME }}:latest
+            ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPONAME }}:${{ env.GITHUB_REF_NAME }}
+            ${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_REPONAME }}:${{ steps.date.outputs.today }}
+            ${{ env.ALIHUB_URL }}/${{ env.ALIHUB_IMAGE_REPONAME }}/${{ env.IMAGE_REPONAME }}:latest
+            ${{ env.ALIHUB_URL }}/${{ env.ALIHUB_IMAGE_REPONAME }}/${{ env.IMAGE_REPONAME }}:${{ env.GITHUB_REF_NAME }}
+            ${{ env.ALIHUB_URL }}/${{ env.ALIHUB_IMAGE_REPONAME }}/${{ env.IMAGE_REPONAME }}:${{ steps.date.outputs.today }}

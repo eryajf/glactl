@@ -10,7 +10,7 @@ main:
           image: docker.cnb.cool/znb/images/debian:all
           script: |
             make gox-linux
-            docker run -d --name buildkitd \                                                                                                                                                                                                                            [364c47e] 
+            docker run -d --name buildkitd \
               --security-opt seccomp=unconfined \
               --security-opt apparmor=unconfined \
               --security-opt systempaths=unconfined \
